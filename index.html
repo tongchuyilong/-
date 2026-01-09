@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>暗夜决斗 - 最终修正版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* === 基础变量 === */
+        :root {
+            --bg-color: #050505;
+            --container-bg: #000000;
+            --gold: #c5a059;
+            --gold-dim: #7a6336;
+            --red: #a81c1c;
+            --red-glow: #ff3333;
+            --text-white: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Serif SC', 'Cinzel', serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+            color: var(--text-white);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #app-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--container-bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        @media (min-width: 500px) {
+            #app-container {
+                max-width: 450px;
+                max-height: 900px;
+                height: 95vh;
+                border: 1px solid #333;
+                border-radius: 4px;
+            }
+        }
+
+        /* === 顶部血量 === */
+        .top-counter-bar {
+            flex-shrink: 0;
+            display: flex;
+            height: 60px;
+            background: linear-gradient(180deg, #1f1f1f, #0d0d0d);
+            border-bottom: 2px solid #2a2a2a;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        }
+
+        .exit-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            border-right: 1px solid #2a2a2a;
+            transition: all 0.2s;
+        }
+        .exit-icon:hover { color: var(--gold); background: rgba(255,255,255,0.05); }
+
+        .counter-slot-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            padding-left: 50px;
+            padding-right: 10px;
+            gap: 2px;
+            cursor: pointer;
+        }
+
+        .counter-slot {
+            flex: 1;
+            max-width: 45px;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d1d1d1;
+            font-weight: 700;
+            font-size: 28px;
+            font-family: 'Cinzel', serif;
+            position: relative;
+            box-shadow: inset 0 0 10px #000;
+            text-shadow: 0 0 5px rgba(168, 28, 28, 0.5);
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+        .counter-slot::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            width: 2px;
+            height: 2px;
+            background: #444;
+            border-radius: 50%;
+        }
+
+        /* === 中间舞台 === */
+        .main-stage {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #080808;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .char-img-full {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            opacity: 0.9;
+            transition: all 0.5s ease;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            transform: scale(1);
+            z-index: 1;
+        }
+
+        /* 模糊模式 (天赋/技能) */
+        .char-img-full.blur-mode {
+            filter: blur(8px) brightness(0.4);
+            transform: scale(1.05);
+        }
+
+        /* === 特效层 === */
+        .visual-effects-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2; /* 图片之上，UI之下 */
+        }
+
+        /* 1. 禁锢: 锁链 */
+        .effect-chains {
+            position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; transition:opacity 0.5s;
+            background-image: 
+                linear-gradient(45deg, transparent 48%, #444 48%, #eee 50%, #444 52%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, #444 48%, #eee 50%, #444 52%, transparent 52%);
+            background-size: 200px 200px;
+            mix-blend-mode: hard-light;
+        }
+        .effect-chains.active { opacity: 0.6; }
+
+        /* 2. 印记: 旋转魔法阵 */
+        .effect-mark {
+            position: absolute; top:50%; left:50%; width:80%; aspect-ratio:1/1; 
+            transform: translate(-50%, -50%) scale(0.5); opacity:0; transition:all 0.5s;
+            border: 2px solid var(--red-glow); border-radius: 50%;
+            box-shadow: 0 0 20px var(--red);
+        }
+        .effect-mark::before {
+            content: ''; position: absolute; top:10%; left:10%; width:80%; height:80%;
+            border: 1px dashed var(--red-glow); border-radius: 50%;
+            animation: rotateMark 10s linear infinite;
+        }
+        .effect-mark::after {
+            content: ''; position: absolute; top:50%; left:50%; width:100%; height:2px; background:var(--red-glow);
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .effect-mark.active { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+        @keyframes rotateMark { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+        /* 3. 沉默: 灰色滤镜+封印 */
+        .effect-silence {
+            position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; transition:opacity 0.3s;
+            background: rgba(46, 26, 71, 0.4);
+            display:flex; justify-content:center; align-items:center;
+            backdrop-filter: grayscale(80%);
+        }
+        .effect-silence::after {
+            content: 'SILENCE'; font-family:'Cinzel'; font-weight:bold; font-size:40px; color:rgba(200,200,200,0.5);
+            border: 3px solid rgba(200,200,200,0.5); padding: 5px 20px; transform: rotate(-15deg);
+            text-shadow: 0 0 10px #000;
+        }
+        .effect-silence.active { opacity: 1; }
+
+        /* 4. 昏睡: 变暗+气泡 */
+        .effect-sleep {
+            position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; transition:opacity 0.5s;
+            background: radial-gradient(circle, rgba(0,0,100,0.2) 0%, rgba(0,0,0,0.8) 90%);
+        }
+        .zzz-bubble {
+            position: absolute; color: #aaccff; font-weight: bold; font-family: sans-serif; opacity: 0;
+        }
+        .effect-sleep.active { opacity: 1; }
+        .effect-sleep.active .zzz-bubble:nth-child(1) { left: 60%; top: 40%; font-size: 20px; animation: floatZ 3s infinite; }
+        .effect-sleep.active .zzz-bubble:nth-child(2) { left: 70%; top: 35%; font-size: 30px; animation: floatZ 3s 1s infinite; }
+        .effect-sleep.active .zzz-bubble:nth-child(3) { left: 80%; top: 30%; font-size: 40px; animation: floatZ 3s 2s infinite; }
+
+        @keyframes floatZ {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-30px) translateX(20px); opacity: 0; }
+        }
+
+
+        /* === 角色信息UI === */
+        .char-info-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            text-align: center; padding-bottom: 10px; pointer-events: none; z-index: 5;
+            transition: opacity 0.3s;
+        }
+        .char-info-overlay.hide { opacity: 0; }
+
+        .rank-large {
+            font-family: 'Cinzel', serif; font-size: 100px; color: rgba(197, 160, 89, 0.1);
+            font-weight: bold; line-height: 0; position: absolute; top: -50px; left: 50%;
+            transform: translateX(-50%); z-index: -1; transition: transform 0.3s;
+        }
+
+        .char-name-large {
+            font-size: 36px; font-weight: 900; color: #ccc; letter-spacing: 2px;
+            background: linear-gradient(to bottom, #fff 20%, #666 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
+        }
+
+        /* === 字幕浮层 - 增强版 === */
+        #infoOverlay {
+            position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; 
+            max-height: 70%; 
+            overflow-y: auto; 
+            text-align: center; z-index: 10; opacity: 0; pointer-events: auto; 
+            transition: opacity 0.4s ease-in-out; display: flex; flex-direction: column;
+            align-items: center; gap: 10px;
+            padding: 10px;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        #infoOverlay::-webkit-scrollbar { display: none; }
+        #infoOverlay.show { opacity: 1; }
+
+        .info-title {
+            font-family: 'Cinzel', serif; color: var(--gold); font-size: 24px; letter-spacing: 3px;
+            text-transform: uppercase; border-bottom: 1px solid var(--gold-dim); padding-bottom: 5px;
+            margin-bottom: 5px; text-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+            flex-shrink: 0;
+            width: 100%;
+        }
+        
+        /* 技能列表样式 */
+        .info-desc-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .skill-item {
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+        .skill-item:last-child { border-bottom: none; }
+        
+        .skill-header {
+            color: var(--gold);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .skill-header::before {
+            content: '✦';
+            font-size: 10px;
+        }
+        .skill-body {
+            font-size: 15px;
+            color: #fff;
+            line-height: 1.5;
+            text-shadow: 0 2px 4px #000;
+            margin-bottom: 6px;
+        }
+        .skill-condition {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* 普通天赋描述居中 */
+        .desc-centered {
+            font-size: 18px; color: #fff; line-height: 1.6; font-weight: bold; text-shadow: 0 2px 4px #000;
+        }
+
+        /* === 提示与Toast === */
+        .condition-toast {
+            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
+            background: rgba(10, 10, 10, 0.95); border: 1px solid var(--gold-dim); color: var(--gold);
+            padding: 20px; text-align: center; font-size: 16px; border-radius: 4px;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 50; width: 80%;
+        }
+        .condition-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        /* === 底部控制面板 === */
+        .control-panel {
+            flex-shrink: 0; background: #0c0c0c; border-top: 1px solid #2a2a2a; padding: 10px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 8px;
+            background-image: linear-gradient(#151515 1px, transparent 1px), linear-gradient(90deg, #151515 1px, transparent 1px);
+            background-size: 10px 10px; z-index: 30;
+        }
+
+        .stone-btn {
+            background: linear-gradient(180deg, #2b2b2b, #141414); color: #888; border: 1px solid #000;
+            border-top: 1px solid #3d3d3d; border-radius: 4px; font-weight: bold; text-align: center; cursor: pointer;
+            box-shadow: 0 3px 0 #000; transition: all 0.1s;
+        }
+        .stone-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+        .stone-btn.active {
+            color: var(--gold); background: linear-gradient(180deg, #1a1a1a, #000);
+            border: 1px solid var(--gold-dim); box-shadow: 0 2px 0 #000, inset 0 0 10px rgba(197, 160, 89, 0.1);
+            text-shadow: 0 0 5px var(--gold);
+        }
+
+        .action-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; height: 50px; }
+        .action-btn { font-size: 15px; display: flex; align-items: center; justify-content: center; }
+
+        .status-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; height: 40px; }
+        .status-btn {
+            font-size: 12px; border-radius: 4px; background: #0f0f0f; border: 1px solid #333; color: #444;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer;
+        }
+        
+        /* 状态按钮激活态 */
+        .status-btn.active { background: #1a0505; color: var(--red-glow); border-color: #8a1c1c; box-shadow: 0 0 5px rgba(255, 51, 51, 0.3); }
+        .status-btn[data-type="sleep"].active { background: #120a1f; color: #c4a1ff; border-color: #6a3da1; }
+        .status-btn[data-type="silence"].active { background: #1a1a1a; color: #ccc; border-color: #666; }
+        .status-btn[data-type="confinement"].active { background: #222; color: #fff; border-color: #fff; }
+        .status-btn[data-type="set"].active { background: #222; color: #fff; border-color: #777; }
+
+        .footer-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 65px; margin-top: 5px; }
+        .big-btn { font-size: 24px; font-family: 'Cinzel'; display: flex; align-items: center; justify-content: center; letter-spacing: 2px; }
+        .btn-upgrade.can-upgrade { color: var(--gold); border-color: var(--gold-dim); background: linear-gradient(180deg, #241e14, #0f0c05); }
+        .btn-exhaust.active { color: #ccc; background: #333; border-color: #555; }
+
+        /* === 选角界面 === */
+        #selection-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050505; z-index: 100;
+            display: flex; flex-direction: column; padding: 30px 20px; overflow-y: auto;
+        }
+        .char-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; padding-bottom: 50px; }
+        .char-card {
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d); border: 1px solid #333; aspect-ratio: 3/4;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888;
+            border-radius: 6px; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .char-card:hover { border-color: var(--gold-dim); color: var(--gold); }
+        .char-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; position: absolute; top:0; left:0; transition: 0.2s;}
+        .char-card:hover img { opacity: 0.8; }
+        .char-card-name { z-index: 2; font-weight: bold; background: rgba(0,0,0,0.7); width: 100%; text-align: center; padding: 5px; bottom: 10px; position: absolute;}
+
+        /* === 弹窗 === */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+            display: none; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(4px);
+        }
+        .modal-overlay.open { display: flex; }
+        .gothic-modal {
+            background: #111; border: 1px solid var(--gold-dim); padding: 30px; width: 80%; max-width: 320px;
+            text-align: center; border-radius: 2px; box-shadow: 0 0 40px rgba(0,0,0,1);
+        }
+        .hp-input {
+            width: 100%; padding: 12px; margin: 25px 0; background: #000; color: var(--gold);
+            border: 1px solid #444; font-size: 28px; font-family: 'Cinzel'; text-align: center; outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- 角色选择 -->
+        <div id="selection-screen">
+            <h2 style="color:var(--gold); text-align:center; font-family:'Cinzel'; letter-spacing:2px; font-size:22px;">SELECT CHARACTER</h2>
+            <div style="width: 50px; height: 1px; background: #333; margin: 10px auto;"></div>
+            <div class="char-grid" id="charGrid"></div>
+        </div>
+
+        <!-- 顶部 HP -->
+        <div class="top-counter-bar">
+            <div class="exit-icon" onclick="exitBattle()"><span>&#10094;</span></div>
+            <div class="counter-slot-container" onclick="openHpModal()">
+                <div class="counter-slot" id="digit-1">0</div>
+                <div class="counter-slot" id="digit-2">2</div>
+                <div class="counter-slot" id="digit-3">5</div>
+                <div class="counter-slot" id="digit-4">0</div>
+                <div class="counter-slot" id="digit-5">0</div>
+                <div class="counter-slot" id="digit-6">0</div>
+            </div>
+        </div>
+
+        <!-- 主舞台 -->
+        <div class="main-stage" onclick="showCondition()">
+            <img src="" alt="" class="char-img-full" id="charImg">
+            
+            <!-- 特效层 -->
+            <div class="visual-effects-layer" id="visualEffects">
+                <div class="effect-chains" id="effect-confinement"></div>
+                <div class="effect-mark" id="effect-mark"></div>
+                <div class="effect-silence" id="effect-silence"></div>
+                <div class="effect-sleep" id="effect-sleep">
+                    <div class="zzz-bubble">Zzz</div>
+                    <div class="zzz-bubble">Zzz</div>
+                    <div class="zzz-bubble">Zzz</div>
+                </div>
+            </div>
+
+            <!-- 字幕浮层：现在支持滚动和多条目 -->
+            <div id="infoOverlay">
+                <div class="info-title" id="infoTitle">TALENT</div>
+                <div class="info-desc-container" id="infoDesc">
+                    <!-- JS动态插入内容 -->
+                </div>
+            </div>
+
+            <!-- 角色名 -->
+            <div class="char-info-overlay" id="charInfoUI">
+                <div class="rank-large" id="stageBadge">I</div>
+                <div class="char-name-large" id="charNameDisplay">NAME</div>
+            </div>
+
+            <div class="condition-toast" id="conditionToast"></div>
+        </div>
+
+        <!-- 底部控制 -->
+        <div class="control-panel">
+            <div class="action-row">
+                <div class="stone-btn action-btn" data-action="talent" onclick="toggleBtn(this)">天赋</div>
+                <div class="stone-btn action-btn" data-action="skill" onclick="toggleBtn(this)">技能</div>
+                <div class="stone-btn action-btn" id="btn-richi" onclick="toggleBtn(this)">立直</div>
+                <div class="stone-btn action-btn" id="btn-lock" onclick="toggleBtn(this)">锁定</div>
+            </div>
+
+            <div class="status-row">
+                <div class="status-btn" onclick="toggleBtn(this)" data-type="confinement">禁锢</div>
+                <div class="status-btn" onclick="toggleBtn(this)" data-type="mark">印记</div>
+                <div class="status-btn" onclick="toggleBtn(this)" data-type="silence">沉默</div>
+                <div class="status-btn" onclick="toggleBtn(this)" data-type="set">盖放</div>
+                <div class="status-btn" onclick="toggleBtn(this)" data-type="sleep">昏睡</div>
+            </div>
+
+            <div class="footer-row">
+                <div class="stone-btn big-btn btn-upgrade can-upgrade" onclick="upgradeStage()">EVOLVE</div>
+                <div class="stone-btn big-btn btn-exhaust" onclick="toggleBtn(this)">TIRED</div>
+            </div>
+        </div>
+
+        <!-- 扣血弹窗 -->
+        <div class="modal-overlay" id="hpModal">
+            <div class="gothic-modal">
+                <h3 style="color:var(--gold); margin-bottom: 5px; font-family:'Cinzel';">MODIFY HP</h3>
+                <div style="width: 100%; height: 1px; background: #333; margin: 10px 0;"></div>
+                <input type="number" id="hpInput" class="hp-input" placeholder="0" pattern="[0-9-]*">
+                <div style="display:flex; justify-content:space-between; gap:10px;">
+                    <button class="stone-btn" style="flex:1; padding:10px;" onclick="closeHpModal()">CANCEL</button>
+                    <button class="stone-btn" style="flex:1; padding:10px; color:var(--red); border-color:var(--red);" onclick="applyHpChange()">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // === 数据配置 ===
+        const characters = [
+            {
+                id: 1,
+                name: "阿莱雅",
+                title: "红莲魔女",
+                img: "https://liblib-api.vibrou.com/image/918731551f334645855014389146c825.png", 
+                talentDesc: "【红莲之怒】<br>本回合造成的战斗伤害 +1000",
+                stages: [
+                    { rank: "I", condition: "I：回合结束时 PP=0", skillName: "火球术", skillDesc: "【火球术】<br>对一名敌方随从造成 2000 点伤害" },
+                    { rank: "II", condition: "II：破坏3个敌方随从", skillName: "烈焰风暴", skillDesc: "【烈焰风暴】<br>对所有敌方随从造成 2000 点伤害" },
+                    { rank: "III", condition: "III：生命值低于10000", skillName: "瞬影杀", skillDesc: "【瞬影杀】<br>消耗3PP，对敌方主战者造成 5000 点伤害" }
+                ]
+            },
+            {
+                id: 2,
+                name: "梦魇",
+                title: "深渊守望",
+                img: "https://placehold.co/400x800/1a2a3a/FFF?text=Nightmare",
+                talentDesc: "【潮汐】<br>回合结束时回复 2000 HP",
+                stages: [
+                    { rank: "I", condition: "I：手牌数 >= 7", skillName: "深渊凝视", skillDesc: "【深渊凝视】<br>抽取 2 张牌" },
+                    { rank: "II", condition: "II：使用5次法术", skillName: "恐惧波动", skillDesc: "【恐惧波动】<br>使一个敌方随从攻击力 -3" },
+                    { rank: "III", condition: "III：牌库剩余 < 10", skillName: "深渊吞噬", skillDesc: "【深渊吞噬】<br>破坏所有攻击力小于3的敌方随从" }
+                ]
+            },
+            {
+                id: 3,
+                name: "寻",
+                title: "森之妖精",
+                img: "https://placehold.co/400x800/1a3a1a/FFF?text=Xun",
+                talentDesc: "【连击】<br>本回合使用卡牌数 >= 2 时，攻击力+1000",
+                stages: [
+                    { rank: "I", condition: "I：使用3张妖精", skillName: "妖精之环", skillDesc: "【妖精之环】<br>将两张妖精加入手牌" },
+                    { rank: "II", condition: "II：本回合使用 5 张牌", skillName: "荆棘之森", skillDesc: "【荆棘之森】<br>给予己方全体“交战时造成1000伤害”" },
+                    { rank: "III", condition: "III：手牌中有 0 费卡", skillName: "万象归还", skillDesc: "【万象归还】<br>将一个敌方随从移回手牌" }
+                ]
+            },
+            {
+                id: 4,
+                name: "谧娘",
+                title: "不朽圣剑",
+                img: "https://placehold.co/400x800/3a3a2a/FFF?text=MiNiang",
+                talentDesc: "【圣盾】<br>受到的伤害 -500（最低为0）",
+                stages: [
+                    { rank: "I", condition: "I：场上有指挥官", skillName: "援护射击", skillDesc: "【援护射击】<br>随机对一个敌方随从造成 1000 点伤害" },
+                    { rank: "II", condition: "II：破坏敌方随从数 >= 5", skillName: "骑士王之授", skillDesc: "【骑士王之授】<br>使一个己方随从获得疾驰" },
+                    { rank: "III", condition: "III：第 10 回合以后", skillName: "杜兰达尔", skillDesc: "【杜兰达尔】<br>召唤圣剑，己方全体受到的伤害变为上限4000" }
+                ]
+            },
+            {
+                id: 5,
+                name: "神子",
+                title: "死灵法师",
+                img: "https://placehold.co/400x800/2a1a3a/FFF?text=Miko",
+                talentDesc: "【通灵】<br>墓地数每回合 +1",
+                stages: [
+                    { rank: "I", condition: "I：随从被破坏", skillName: "灵魂转移", skillDesc: "【灵魂转移】<br>破坏一个己方随从，抽两张牌" },
+                    { rank: "II", condition: "II：墓地数 >= 10", skillName: "腐朽气息", skillDesc: "【腐朽气息】<br>消耗 4 墓地，对一个敌方随从造成 3000 伤害" },
+                    { rank: "III", condition: "III：墓地数 >= 20", skillName: "灵魂收割", skillDesc: "【灵魂收割】<br>消耗 4 墓地，破坏一个随机随从" }
+                ]
+            },
+            {
+                id: 6,
+                name: "浪人",
+                title: "暗夜伯爵",
+                img: "https://placehold.co/400x800/3a0a0a/FFF?text=Ronin",
+                talentDesc: "【复仇】<br>HP低于10000时，所有手牌费用-1",
+                stages: [
+                    { rank: "I", condition: "I：自伤次数 >= 2", skillName: "利爪的一击", skillDesc: "【利爪的一击】<br>对双方主战者各造成 1000 点伤害" },
+                    { rank: "II", condition: "II：进入复仇状态", skillName: "鲜血花园", skillDesc: "【鲜血花园】<br>回合结束时，对敌方主战者造成 1000 点伤害" },
+                    { rank: "III", condition: "III：渴望状态激活", skillName: "血之契约", skillDesc: "【血之契约】<br>受到 2000 点伤害，抽 2 张牌" }
+                ]
+            },
+            {
+                id: 7,
+                name: "乾坤袋",
+                title: "光辉祭司",
+                img: "https://placehold.co/400x800/3a3a3a/FFF?text=Bag",
+                talentDesc: "【祈祷】<br>倒数护符倒数 -1",
+                stages: [
+                    { rank: "I", condition: "I：护符发动", skillName: "漆黑法典", skillDesc: "【漆黑法典】<br>消灭一个生命值 3 以下的敌方随从" },
+                    { rank: "II", condition: "II：回复过生命值", skillName: "守护之日", skillDesc: "【守护之日】<br>使一个己方随从获得守护" },
+                    { rank: "III", condition: "III：场上有守护随从", skillName: "忒弥斯的审判", skillDesc: "【忒弥斯的审判】<br>破坏场上所有随从" }
+                ]
+            },
+            {
+                id: 8,
+                name: "泽克",
+                title: "黑龙骑士",
+                img: "https://placehold.co/400x800/0a1a0a/FFF?text=Zeke",
+                talentDesc: "【觉醒】<br>PP最大值 >= 7 时，攻击力翻倍",
+                stages: [
+                    { rank: "I", condition: "I：PP最大值增加", skillName: "龙之启示", skillDesc: "【龙之启示】<br>PP最大值 +1" },
+                    { rank: "II", condition: "II：进入觉醒状态", skillName: "沙拉曼达", skillDesc: "【沙拉曼达】<br>对一个敌方随从造成 3000 点伤害" },
+                    { rank: "III", condition: "III：弃置过手牌", skillName: "龙之吐息", skillDesc: "【龙之吐息】<br>对所有敌方随从造成 2000 点伤害" }
+                ]
+            },
+            {
+                id: 9,
+                name: "铜钱剑",
+                title: "超越者",
+                img: "https://placehold.co/400x800/1a1a2a/FFF?text=CoinSword",
+                talentDesc: "【共鸣】<br>牌库剩余张数为偶数时，获得疾驰",
+                stages: [
+                    { rank: "I", condition: "I：将造物洗入牌库", skillName: "机械降神", skillDesc: "【机械降神】<br>舍弃手牌，抽取 6 张牌" },
+                    { rank: "II", condition: "II：触发共鸣", skillName: "加速装置", skillDesc: "【加速装置】<br>使用造物卡牌时，回复 1PP" },
+                    { rank: "III", condition: "III：破坏过5个造物", skillName: "次元断", skillDesc: "【次元断】<br>将一个敌方随从消失" }
+                ]
+            },
+            {
+                id: 10,
+                name: "恩娜",
+                title: "时空神",
+                img: "https://placehold.co/400x800/000/FFF?text=Enna",
+                talentDesc: "【重置】<br>将双方费用重置为 0",
+                stages: [
+                    { rank: "I", condition: "I：第 5 回合", skillName: "命运之轮", skillDesc: "【命运之轮】<br>双方抽取 1 张牌" },
+                    { rank: "II", condition: "II：第 8 回合", skillName: "空间撕裂", skillDesc: "【空间撕裂】<br>随机消灭一个敌方随从" },
+                    { rank: "III", condition: "III：第 10 回合", skillName: "时间回溯", skillDesc: "【时间回溯】<br>将场面恢复至上一回合结束时的状态" }
+                ]
+            }
+        ];
+
+        let currentHp = 25000;
+        let currentCharIndex = 0;
+        let currentStage = 0; // 0=Rank I, 1=Rank II, 2=Rank III
+
+        window.onload = function() {
+            renderCharSelection();
+        };
+
+        function renderCharSelection() {
+            const grid = document.getElementById('charGrid');
+            grid.innerHTML = '';
+            characters.forEach((char, index) => {
+                const el = document.createElement('div');
+                el.className = 'char-card';
+                el.innerHTML = `
+                    <img src="${char.img}" alt="${char.name}">
+                    <div class="char-card-name">
+                        <div style="font-family:'Noto Serif SC'; font-weight:700; color:#e0e0e0;">${char.name}</div>
+                        <div style="font-size:10px; color:var(--gold);">${char.title}</div>
+                    </div>
+                `;
+                el.onclick = () => selectCharacter(index);
+                grid.appendChild(el);
+            });
+        }
+
+        function selectCharacter(index) {
+            currentCharIndex = index;
+            currentStage = 0;
+            currentHp = 25000;
+            
+            updateHpDisplay(currentHp);
+            const char = characters[index];
+            document.getElementById('charNameDisplay').innerText = char.name;
+            document.getElementById('charImg').src = char.img;
+            
+            // 重置UI和状态
+            document.querySelectorAll('.stone-btn, .status-btn').forEach(btn => {
+                if(!btn.classList.contains('btn-upgrade')) btn.classList.remove('active');
+            });
+            // 清除所有特效
+            document.querySelectorAll('.visual-effects-layer > div').forEach(div => div.classList.remove('active'));
+            
+            resetBlurEffect(); 
+            updateStageUI();
+            
+            const screen = document.getElementById('selection-screen');
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+                screen.style.opacity = '1';
+            }, 200);
+        }
+        
+        function exitBattle() {
+             if(confirm('返回角色选择界面？\n(当前战斗数据将重置)')) {
+                document.getElementById('selection-screen').style.display = 'flex';
+             }
+        }
+
+        function updateHpDisplay(val) {
+            const slots = document.querySelectorAll('.counter-slot');
+            const color = val < 5000 ? '#ff3333' : '#d1d1d1';
+            let s = Math.max(0, val).toString().padStart(6, '0');
+            if(val > 999999) s = "999999"; 
+            for(let i=1; i<=6; i++) {
+                const el = document.getElementById(`digit-${i}`);
+                el.innerText = s[i-1];
+                el.style.color = color;
+                if(val < 5000) el.style.textShadow = "0 0 10px #ff0000";
+                else el.style.textShadow = "0 0 5px rgba(168, 28, 28, 0.5)";
+            }
+        }
+
+        function openHpModal() {
+            document.getElementById('hpInput').value = '';
+            document.getElementById('hpModal').classList.add('open');
+            setTimeout(() => document.getElementById('hpInput').focus(), 100);
+        }
+        function closeHpModal() {
+            document.getElementById('hpModal').classList.remove('open');
+            document.getElementById('hpInput').blur();
+        }
+        function applyHpChange() {
+            const inputVal = document.getElementById('hpInput').value;
+            if(inputVal === "") { closeHpModal(); return; }
+            const val = parseInt(inputVal);
+            if (!isNaN(val)) {
+                currentHp -= val;
+                if(currentHp < 0) currentHp = 0;
+                updateHpDisplay(currentHp);
+            }
+            closeHpModal();
+        }
+
+        function upgradeStage() {
+            const badge = document.getElementById('stageBadge');
+            badge.style.transform = 'translateX(-50%) scale(1.4)';
+            badge.style.opacity = '0.5';
+            setTimeout(() => {
+                badge.style.transform = 'translateX(-50%) scale(1)';
+                badge.style.opacity = '1';
+            }, 300);
+
+            // 循环切换阶段：I -> II -> III -> I
+            if (currentStage < 2) {
+                currentStage++;
+            } else {
+                 currentStage = 0; 
+            }
+            updateStageUI();
+            showCondition();
+            
+            // 如果“技能”按钮当前是激活状态，立即刷新显示的技能文本
+            const skillBtn = document.querySelector('.stone-btn[data-action="skill"]');
+            if (skillBtn && skillBtn.classList.contains('active')) {
+                showActionInfo('skill');
+            }
+        }
+
+        function updateStageUI() {
+            const char = characters[currentCharIndex];
+            const stageData = char.stages[currentStage];
+            document.getElementById('stageBadge').innerText = stageData.rank;
+            // Removed direct text assignment here to rely on showCondition dynamically logic
+        }
+
+        function showCondition() {
+            // 核心修改逻辑
+            // 1. 如果是第三阶段（Rank III, index 2），直接返回，不显示弹窗
+            if (currentStage >= 2) return;
+
+            const char = characters[currentCharIndex];
+            // 2. 显示 *下一阶* 的条件
+            const nextStage = char.stages[currentStage + 1];
+
+            const toast = document.getElementById('conditionToast');
+            toast.innerText = nextStage.condition;
+
+            toast.classList.add('show');
+            if(toast.timeout) clearTimeout(toast.timeout);
+            toast.timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // === 按钮逻辑 ===
+        function toggleBtn(el) {
+            const actionType = el.getAttribute('data-action');
+            const dataType = el.getAttribute('data-type'); // 获取状态类型
+
+            // 1. 天赋/技能互斥
+            if (actionType === 'talent' || actionType === 'skill') {
+                const otherType = actionType === 'talent' ? 'skill' : 'talent';
+                const otherBtn = document.querySelector(`.stone-btn[data-action="${otherType}"]`);
+                if (otherBtn && otherBtn.classList.contains('active')) {
+                    otherBtn.classList.remove('active');
+                }
+            }
+
+            // 2. 切换按钮状态
+            el.classList.toggle('active');
+            const isActive = el.classList.contains('active');
+
+            // 3. 处理天赋/技能的字幕和模糊
+            if (actionType === 'talent' || actionType === 'skill') {
+                if (isActive) {
+                    showActionInfo(actionType);
+                } else {
+                    resetBlurEffect();
+                }
+            }
+
+            // 4. 处理状态特效
+            if (dataType) {
+                // 如果是那4个有特效的状态
+                if (['confinement', 'mark', 'silence', 'sleep'].includes(dataType)) {
+                    const effectLayer = document.getElementById('effect-' + dataType);
+                    if (effectLayer) {
+                        if (isActive) effectLayer.classList.add('active');
+                        else effectLayer.classList.remove('active');
+                    }
+                }
+            }
+
+            // 5. 立直联动锁定
+            if (el.id === 'btn-richi' && isActive) {
+                const lockBtn = document.getElementById('btn-lock');
+                if (lockBtn) lockBtn.classList.add('active');
+            }
+        }
+
+        function showActionInfo(type) {
+            const char = characters[currentCharIndex];
+            const img = document.getElementById('charImg');
+            const overlay = document.getElementById('infoOverlay');
+            const titleEl = document.getElementById('infoTitle');
+            const descEl = document.getElementById('infoDesc'); // 这是容器
+            const charInfoUI = document.getElementById('charInfoUI');
+
+            // 清空旧内容
+            descEl.innerHTML = "";
+
+            if (type === 'talent') {
+                titleEl.innerText = "TALENT";
+                descEl.innerHTML = `<div class="desc-centered">${char.talentDesc}</div>`;
+            } else if (type === 'skill') {
+                
+                titleEl.innerText = `SKILLS (RANK ${char.stages[currentStage].rank})`;
+
+                let skillHtml = "";
+                // 循环显示从 0 到 currentStage 的所有技能
+                for (let i = 0; i <= currentStage; i++) {
+                    const s = char.stages[i];
+                    
+                    // 技能面板逻辑：只有 Rank I 和 Rank II 显示升阶条件，Rank III 不显示
+                    let conditionHtml = '';
+                    if (i < 2) {
+                        conditionHtml = `<div class="skill-condition">条件: ${s.condition}</div>`;
+                    }
+
+                    skillHtml += `
+                        <div class="skill-item">
+                            <div class="skill-header">${s.skillName} <span style="font-size:10px; opacity:0.6; margin-left:auto;">RANK ${s.rank}</span></div>
+                            <div class="skill-body">${s.skillDesc}</div>
+                            ${conditionHtml}
+                        </div>
+                    `;
+                }
+                descEl.innerHTML = skillHtml;
+            }
+
+            img.classList.add('blur-mode');
+            charInfoUI.classList.add('hide'); 
+            overlay.classList.add('show');
+            // 技能可能很长，确保滚动回顶部
+            descEl.scrollTop = 0;
+            overlay.scrollTop = 0;
+        }
+
+        function resetBlurEffect() {
+            const img = document.getElementById('charImg');
+            const overlay = document.getElementById('infoOverlay');
+            const charInfoUI = document.getElementById('charInfoUI');
+
+            img.classList.remove('blur-mode');
+            charInfoUI.classList.remove('hide');
+            overlay.classList.remove('show');
+        }
+
+        document.getElementById('hpInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') applyHpChange();
+        });
+    </script>
+</body>
+</html>
