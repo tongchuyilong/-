@@ -226,6 +226,23 @@
         .effect-sleep.active .zzz-bubble:nth-child(2) { left: 70%; top: 35%; font-size: 30px; animation: floatZ 3s 1s infinite; }
         .effect-sleep.active .zzz-bubble:nth-child(3) { left: 80%; top: 30%; font-size: 40px; animation: floatZ 3s 2s infinite; }
 
+        /* 5. 盖放: 图片遮盖 (新增) */
+        .effect-set {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background-image: url('https://image2url.com/r2/bucket2/images/1767959042195-f5a3e477-570b-4e82-91d4-71231c16f6fa.png');
+            background-size: cover;
+            background-position: top center;
+            background-repeat: no-repeat;
+            z-index: 3; /* 在特效层中位于较高层 */
+        }
+        .effect-set.active { opacity: 1; }
+
         @keyframes floatZ {
             0% { transform: translateY(0) translateX(0); opacity: 0; }
             50% { opacity: 0.8; }
@@ -348,12 +365,42 @@
             background: linear-gradient(180deg, #2b2b2b, #141414); color: #888; border: 1px solid #000;
             border-top: 1px solid #3d3d3d; border-radius: 4px; font-weight: bold; text-align: center; cursor: pointer;
             box-shadow: 0 3px 0 #000; transition: all 0.1s;
+            position: relative; /* 新增: 为了定位锁图标 */
         }
         .stone-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
         .stone-btn.active {
             color: var(--gold); background: linear-gradient(180deg, #1a1a1a, #000);
             border: 1px solid var(--gold-dim); box-shadow: 0 2px 0 #000, inset 0 0 10px rgba(197, 160, 89, 0.1);
             text-shadow: 0 0 5px var(--gold);
+        }
+
+        /* 锁定状态样式 */
+        .stone-btn.locked {
+            pointer-events: none;
+            opacity: 0.6;
+            filter: grayscale(80%);
+            border-color: #333;
+            color: #555;
+        }
+        /* 锁定图标遮罩 */
+        .stone-btn.locked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #a0a0a0;
+            text-shadow: 0 0 5px #000;
+            z-index: 10;
+        }
+        /* 锁链图标 */
+        .stone-btn.locked-chains::after {
+            content: '⛓'; /* 锁链 */
+        }
+        /* 沉默图标 */
+        .stone-btn.locked-silence::after {
+            content: '🚫'; /* 禁止 */
         }
 
         .action-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; height: 50px; }
@@ -442,6 +489,8 @@
                 <div class="effect-chains" id="effect-confinement"></div>
                 <div class="effect-mark" id="effect-mark"></div>
                 <div class="effect-silence" id="effect-silence"></div>
+                <!-- 新增：盖放特效 -->
+                <div class="effect-set" id="effect-set"></div>
                 <div class="effect-sleep" id="effect-sleep">
                     <div class="zzz-bubble">Zzz</div>
                     <div class="zzz-bubble">Zzz</div>
@@ -510,7 +559,7 @@
             {
                 id: 1,
                 name: "阿莱雅",
-                title: "红莲魔女",
+                title: "绯红猎手",
                 // 默认图片（Rank I）
                 img: "https://image2url.com/r2/bucket3/images/1767785772673-027981a3-3d59-407a-9e25-c713e75617b6.png", 
                 // 新增：各阶段对应图片
@@ -519,164 +568,164 @@
                     "https://image2url.com/r2/bucket1/images/1767785808177-6278f315-746a-49f6-a6c6-cf632a1d3bba.png", // II
                     "https://image2url.com/r2/bucket2/images/1767785818017-c1609005-8ae9-4aff-9758-aa94681f3e2e.png"  // III
                 ],
-                talentDesc: "【红莲之怒】<br>本回合造成的战斗伤害 +1000",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：回合结束时 PP=0", skillName: "火球术", skillDesc: "【火球术】<br>对一名敌方随从造成 2000 点伤害" },
-                    { rank: "II", condition: "II：破坏3个敌方随从", skillName: "烈焰风暴", skillDesc: "【烈焰风暴】<br>对所有敌方随从造成 2000 点伤害" },
-                    { rank: "III", condition: "III：生命值低于10000", skillName: "瞬影杀", skillDesc: "【瞬影杀】<br>消耗3PP，对敌方主战者造成 5000 点伤害" }
+                    { rank: "I", condition: "II：该角色胡牌成功", skillName: "灼热气息", skillDesc: "【灼热气息】<br>该角色胡牌结算时，根据该角色以副露的纯红色牌（红中、赤宝牌）该角色进行 数量x1000 的额外回复。" },
+                    { rank: "II", condition: "III：达成其中一条：<br>①该角色胡牌成功<br>②发动技能抽牌到达3张", skillName: "火花射击", skillDesc: "【火花射击】<br>该角色回合开始时发动，一场一次，代替抽牌并进行判定，抽到纯红色牌放置于副露区独立展示（不视为手牌） 可再进行一次抽牌，否则直接打出。<br>该角色非自摸胡牌结算时根据副露区独立展示的纯红色牌，对胡牌目标角色造成数量 x1000 的额外伤害。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "花火大会", skillDesc: "【花火大会】<br>该角色万字牌视为纯红色牌。" }
                 ]
             },
             {
                 id: 2,
                 name: "梦魇",
-                title: "深渊守望",
+                title: "尊者",
                 img: "https://image2url.com/r2/bucket2/images/1767781848672-618c7a11-fca4-468e-bdaf-9d98603c9629.jpg",
                 stageImages: [
                     "https://image2url.com/r2/bucket2/images/1767781848672-618c7a11-fca4-468e-bdaf-9d98603c9629.jpg",
                     "https://image2url.com/r2/bucket1/images/1767781940190-8149b1ed-55c8-4f6c-a36d-348dde8325cf.jpg",
                     "https://image2url.com/r2/bucket1/images/1767781993798-da1c1777-2b6a-4e0c-b61a-0a14bd7e171e.jpg"
                 ],
-                talentDesc: "【潮汐】<br>回合结束时回复 2000 HP",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：手牌数 >= 7", skillName: "深渊凝视", skillDesc: "【深渊凝视】<br>抽取 2 张牌" },
-                    { rank: "II", condition: "II：使用5次法术", skillName: "恐惧波动", skillDesc: "【恐惧波动】<br>使一个敌方随从攻击力 -3" },
-                    { rank: "III", condition: "III：牌库剩余 < 10", skillName: "深渊吞噬", skillDesc: "【深渊吞噬】<br>破坏所有攻击力小于3的敌方随从" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①该角色立直成功<br>②到达夜场时", skillName: "阴影降落", skillDesc: "【阴影降落】<br>1.该角色每场前三张出牌和立直牌以盖牌形式打出。<br>2.该角色出牌被其他角色相应后，以盖放形式进入其他角色副露区。" },
+                    { rank: "II", condition: "III：达成其中一个条件：<br>①该角色胡牌成功<br>②达到夜场时", skillName: "遮蔽", skillDesc: "【遮蔽】<br>该角色出牌阶段时发动，一场一次；可选择有一张牌进行盖放打出。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "无尽梦魇", skillDesc: "【无尽梦魇】<br>本场内该角色已知的盖牌中的相同牌到达4张时发动，翻开4张牌；盖放该角色的牌池中所有其他牌，后续出牌均以盖放形式打出，直至自身相应或立直。" }
                 ]
             },
             {
                 id: 3,
                 name: "寻",
-                title: "森之妖精",
+                title: "真理侦探",
                 img: "https://image2url.com/r2/bucket2/images/1767783814445-57469afa-0645-42bd-aca3-195b080ea68b.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket2/images/1767783814445-57469afa-0645-42bd-aca3-195b080ea68b.png",
                     "https://image2url.com/r2/bucket1/images/1767783913129-832b10d2-09be-4594-a1d1-8336840a32c7.png",
                     "https://image2url.com/r2/bucket3/images/1767784574129-865d148f-f1de-4bbb-b529-d0b0c8c27ec3.png"
                 ],
-                talentDesc: "【连击】<br>本回合使用卡牌数 >= 2 时，攻击力+1000",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：使用3张妖精", skillName: "妖精之环", skillDesc: "【妖精之环】<br>将两张妖精加入手牌" },
-                    { rank: "II", condition: "II：本回合使用 5 张牌", skillName: "荆棘之森", skillDesc: "【荆棘之森】<br>给予己方全体“交战时造成1000伤害”" },
-                    { rank: "III", condition: "III：手牌中有 0 费卡", skillName: "万象归还", skillDesc: "【万象归还】<br>将一个敌方随从移回手牌" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①该角色成功造成任意伤害<br>②推理成功3次", skillName: "推理", skillDesc: "【推理】<br>全场胡牌结算时，选择一名未听牌角色发动，一场一次；对其未公开的手牌进行3次推理，每正确一张牌需展示其牌，并对其造成 1000额外伤害；错误则对该角色自身造成 1000额外伤害。" },
+                    { rank: "II", condition: "III：达成其中一个条件：<br>①该角色成功造成任意伤害<br>②推理成功3次", skillName: "对峙", skillDesc: "【对峙】<br>该角色回合开始时发动，一场一次；选择手牌中的一张牌，基于一个其他角色单独观测；若其他角色拥有此牌，可选择以下效果其中一个：<br>1.立刻打出，并再抽取一张牌<br>2.让该角色进行 2000额外回复<br>3.其他角色拥有此牌，视为推理成功1次”" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "真相", skillDesc: "【真相】<br>二阶段技能增加描述：<br>二阶段技能发动的目标本场每次打出观测牌的相同牌时，受到 1000额外伤害；<br>本场结算时公开手牌，若有相同牌，则立刻受到 5000额外伤害。" }
                 ]
             },
             {
                 id: 4,
                 name: "谧娘",
-                title: "不朽圣剑",
+                title: "现世断离",
                 img: "https://image2url.com/r2/bucket2/images/1767784589241-4f09120f-55a1-4060-8901-5fc7775a3490.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket2/images/1767784589241-4f09120f-55a1-4060-8901-5fc7775a3490.png",
                     "https://image2url.com/r2/bucket3/images/1767784648847-770b167f-4968-4570-b50a-7b6dae177bec.png",
                     "https://image2url.com/r2/bucket2/images/1767784673459-8a623c65-6078-4e90-b79c-cdd08b45f14e.png"
                 ],
-                talentDesc: "【圣盾】<br>受到的伤害 -500（最低为0）",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：场上有指挥官", skillName: "援护射击", skillDesc: "【援护射击】<br>随机对一个敌方随从造成 1000 点伤害" },
-                    { rank: "II", condition: "II：破坏敌方随从数 >= 5", skillName: "骑士王之授", skillDesc: "【骑士王之授】<br>使一个己方随从获得疾驰" },
-                    { rank: "III", condition: "III：第 10 回合以后", skillName: "杜兰达尔", skillDesc: "【杜兰达尔】<br>召唤圣剑，己方全体受到的伤害变为上限4000" }
+                    { rank: "I", condition: "II：该角色本场没有受到任何伤害", skillName: "灵转", skillDesc: "【灵转】<br>该角色不会受到来自于包含“全场”描述的技能造成的额外伤害。" },
+                    { rank: "II", condition: "III：该角色本场没有受到任何伤害", skillName: "飘渺", skillDesc: "【飘渺】<br>该角色不能成为包含“额外伤害”的技能的目标。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "断离", skillDesc: "【断离】<br>该角色不会受到其他角色技能的影响。" }
                 ]
             },
             {
                 id: 5,
-                name: "神子",
-                title: "死灵法师",
+                name: "冠役神子",
+                title: "坎塔门罗世界主神",
                 img: "https://image2url.com/r2/bucket3/images/1767784709647-84bd40d9-a1f5-4672-93ea-06bdf924b378.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket3/images/1767784709647-84bd40d9-a1f5-4672-93ea-06bdf924b378.png",
                     "https://image2url.com/r2/bucket2/images/1767784733391-c96dd8b8-7f80-4909-a32f-d93ff3a6728c.png",
                     "https://image2url.com/r2/bucket2/images/1767784751226-283950f0-e24a-40b9-b21f-2b95e6da84a7.png"
                 ],
-                talentDesc: "【通灵】<br>墓地数每回合 +1",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：随从被破坏", skillName: "灵魂转移", skillDesc: "【灵魂转移】<br>破坏一个己方随从，抽两张牌" },
-                    { rank: "II", condition: "II：墓地数 >= 10", skillName: "腐朽气息", skillDesc: "【腐朽气息】<br>消耗 4 墓地，对一个敌方随从造成 3000 伤害" },
-                    { rank: "III", condition: "III：墓地数 >= 20", skillName: "灵魂收割", skillDesc: "【灵魂收割】<br>消耗 4 墓地，破坏一个随机随从" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①本场流局<br>②到达夜场时，立刻", skillName: "不许", skillDesc: "【不许】<br>本场全场首次吃碰响应时发动，无效此次响应。<br>若首次吃碰为该角色，对相应目标造成 1000额外伤害。" },
+                    { rank: "II", condition: "III：该角色胡牌成功", skillName: "礼数", skillDesc: "【礼数】<br>本场开始时，该角色主动支付 1000能量；全场角色3巡内不能副露。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "欢迎来到我的宫殿", skillDesc: "【欢迎来到我的宫殿】<br>本场开始时，该角色主动支付 2000能量 发动，其他角色本场不能副露。" }
                 ]
             },
             {
                 id: 6,
                 name: "浪人",
-                title: "暗夜伯爵",
+                title: "剑客",
                 img: "https://image2url.com/r2/bucket1/images/1767785035107-3f55095e-d57b-4c46-b6c9-e47d3d354c58.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket1/images/1767785035107-3f55095e-d57b-4c46-b6c9-e47d3d354c58.png",
                     "https://image2url.com/r2/bucket2/images/1767785056186-120ed7a7-29d6-4844-8432-4d4c9b494b74.png",
                     "https://image2url.com/r2/bucket3/images/1767785076674-0fab848b-03a9-4033-84ad-7bc4c519cda3.png"
                 ],
-                talentDesc: "【复仇】<br>HP低于10000时，所有手牌费用-1",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：自伤次数 >= 2", skillName: "利爪的一击", skillDesc: "【利爪的一击】<br>对双方主战者各造成 1000 点伤害" },
-                    { rank: "II", condition: "II：进入复仇状态", skillName: "鲜血花园", skillDesc: "【鲜血花园】<br>回合结束时，对敌方主战者造成 1000 点伤害" },
-                    { rank: "III", condition: "III：渴望状态激活", skillName: "血之契约", skillDesc: "【血之契约】<br>受到 2000 点伤害，抽 2 张牌" }
+                    { rank: "I", condition: "II：全场有角色成功胡牌", skillName: "杀意感知", skillDesc: "【杀意感知】<br>该角色的出牌不会受到包含“一发”役种的牌型的胡牌响应." },
+                    { rank: "II", condition: "III：该角色胡牌成功", skillName: "快速拔刀", skillDesc: "【快速拔刀】<br>该角色本场首个回合开始时发动，宣言一个属性，盖放一张该属性的手牌，该手牌无法打出，无法变化；技能发动后直至角色下次摸牌，若有人 打出/自摸 相同牌，则视为“居合斩”（1番役种），可触发“一发”“立直”“自摸”效果" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "居合架势", skillDesc: "【居合架势】<br>该角色二阶段技能持续至本场结束。" }
                 ]
             },
             {
                 id: 7,
                 name: "乾坤袋",
-                title: "光辉祭司",
+                title: "真元天地",
                 img: "https://image2url.com/r2/bucket1/images/1767785164686-a1cf5183-ad99-473b-9c7b-4d79e241031b.jpg",
                 stageImages: [
                     "https://image2url.com/r2/bucket1/images/1767785164686-a1cf5183-ad99-473b-9c7b-4d79e241031b.jpg",
                     "https://image2url.com/r2/bucket1/images/1767785186465-b6cd499a-f757-4048-a461-c058cb7231e3.jpg",
                     "https://image2url.com/r2/bucket2/images/1767785201133-3108bbb0-aa85-4174-b9b2-7a64e89f14c3.jpg"
                 ],
-                talentDesc: "【祈祷】<br>倒数护符倒数 -1",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：护符发动", skillName: "漆黑法典", skillDesc: "【漆黑法典】<br>消灭一个生命值 3 以下的敌方随从" },
-                    { rank: "II", condition: "II：回复过生命值", skillName: "守护之日", skillDesc: "【守护之日】<br>使一个己方随从获得守护" },
-                    { rank: "III", condition: "III：场上有守护随从", skillName: "忒弥斯的审判", skillDesc: "【忒弥斯的审判】<br>破坏场上所有随从" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①该角色胡牌成功<br>②除外区牌到达3张", skillName: "收袋", skillDesc: "【收袋】<br>该角色每场的首个回合；打出且未被响应的牌，进入除外区。" },
+                    { rank: "II", condition: "III：达成其中一个条件：<br>①该角色胡牌成功<br>②除外区牌到达4张", skillName: "入袋", skillDesc: "【入袋】<br>该角色每场的首个回合开始时发动；选择1张手牌，进入除外区，再摸一张牌。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "探囊取物", skillDesc: "【探囊取物】<br>在该角色每场的首个回合，不发动二阶段技能时发动，选择3张手牌替换3张除外区的牌加入手牌，本场不能再发动二阶段技能。" }
                 ]
             },
             {
                 id: 8,
                 name: "泽克",
-                title: "黑龙骑士",
+                title: "复仇枪神",
                 img: "https://image2url.com/r2/bucket2/images/1767785261482-aa80a43f-0363-4b04-b069-9eba1e7ffec5.jpg",
                 stageImages: [
                     "https://image2url.com/r2/bucket2/images/1767785261482-aa80a43f-0363-4b04-b069-9eba1e7ffec5.jpg",
                     "https://image2url.com/r2/bucket2/images/1767785285842-9b60a54b-cb63-4f2b-87f3-f51650e674fb.jpg",
                     "https://image2url.com/r2/bucket2/images/1767785300106-e3226d59-63d1-414d-a419-792a181d2577.jpg"
                 ],
-                talentDesc: "【觉醒】<br>PP最大值 >= 7 时，攻击力翻倍",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：PP最大值增加", skillName: "龙之启示", skillDesc: "【龙之启示】<br>PP最大值 +1" },
-                    { rank: "II", condition: "II：进入觉醒状态", skillName: "沙拉曼达", skillDesc: "【沙拉曼达】<br>对一个敌方随从造成 3000 点伤害" },
-                    { rank: "III", condition: "III：弃置过手牌", skillName: "龙之吐息", skillDesc: "【龙之吐息】<br>对所有敌方随从造成 2000 点伤害" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①该角色胡牌成功<br>②到达深夜场时，立刻", skillName: "如此美味", skillDesc: "【如此美味】<br>该角色受到任意伤害时，增加1个魔弹标记；<br>该标记持续至整局游戏结束。<br>本场结算后发动，一场一次，吞噬魔弹，进行吞噬数量 x500 的额外回复。" },
+                    { rank: "II", condition: "III：该角色本场内造成不小于 4000额外伤害 时", skillName: "哦哟，bingo！", skillDesc: "【哦哟，bingo！】<br>本场开始时发动，一场一次；消耗最多2个魔弹标记，盖放等量点数数量的手牌，若有角色打出相同牌，则打开盖牌，并对其造成 2000额外伤害，并将打开的盖牌放回至手牌中。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "不要被我逮到噢！", skillDesc: "【不要被我逮到噢！】<br>1.本场开始时，增加1个魔弹标记<br>2.二阶段技能可以在本场结算前任意时间点发动，并且取消“一场一次”的限制" }
                 ]
             },
             {
                 id: 9,
                 name: "铜钱剑",
-                title: "超越者",
+                title: "无妄天尊",
                 img: "https://image2url.com/r2/bucket3/images/1767785395865-18d3603d-4d20-4f97-bf92-e1838dff4bf5.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket3/images/1767785395865-18d3603d-4d20-4f97-bf92-e1838dff4bf5.png",
                     "https://image2url.com/r2/bucket1/images/1767785409244-c2b8f9c7-436d-4e5d-9d21-5886b6f91fb7.png",
                     "https://image2url.com/r2/bucket1/images/1767785422790-c24a4d53-66ed-4709-97d4-66c8b71dbdb7.png"
                 ],
-                talentDesc: "【共鸣】<br>牌库剩余张数为偶数时，获得疾驰",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：将造物洗入牌库", skillName: "机械降神", skillDesc: "【机械降神】<br>舍弃手牌，抽取 6 张牌" },
-                    { rank: "II", condition: "II：触发共鸣", skillName: "加速装置", skillDesc: "【加速装置】<br>使用造物卡牌时，回复 1PP" },
-                    { rank: "III", condition: "III：破坏过5个造物", skillName: "次元断", skillDesc: "【次元断】<br>将一个敌方随从消失" }
+                    { rank: "I", condition: "II：达成其中一个条件：<br>①该角色胡牌成功<br>②该角色立直成功", skillName: "倚剑", skillDesc: "【倚剑】<br>该角色立直不会消耗能量。" },
+                    { rank: "II", condition: "III：达成其中一个条件：<br>①该角色胡牌成功<br>②该角色立直成功", skillName: "一剑成阵", skillDesc: "【一剑成阵】<br>该角色立直时，直到该角色再次出牌，其他人不能发动主动技能。" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "邪崇驱散", skillDesc: "【邪崇驱散】<br>该角色立直生效时发动，一场一次，无效其他立直效果，其他角色直到本场结算无法再进行立直。" }
                 ]
             },
             {
                 id: 10,
-                name: "恩娜",
-                title: "时空神",
+                name: "月之少女恩娜",
+                title: "月神",
                 img: "https://image2url.com/r2/bucket1/images/1767785439035-79da36df-5b50-4621-ab10-4e303d1ed334.png",
                 stageImages: [
                     "https://image2url.com/r2/bucket1/images/1767785439035-79da36df-5b50-4621-ab10-4e303d1ed334.png",
                     "https://image2url.com/r2/bucket3/images/1767785448504-ab7b1427-26d5-4a19-b4fb-4f737371ade2.png",
                     "https://image2url.com/r2/bucket1/images/1767785459445-00412e74-06db-4a13-8b4d-9a4fd41388e5.png"
                 ],
-                talentDesc: "【重置】<br>将双方费用重置为 0",
+                talentDesc: "【暂无】<br>无",
                 stages: [
-                    { rank: "I", condition: "I：第 5 回合", skillName: "命运之轮", skillDesc: "【命运之轮】<br>双方抽取 1 张牌" },
-                    { rank: "II", condition: "II：第 8 回合", skillName: "空间撕裂", skillDesc: "【空间撕裂】<br>随机消灭一个敌方随从" },
-                    { rank: "III", condition: "III：第 10 回合", skillName: "时间回溯", skillDesc: "【时间回溯】<br>将场面恢复至上一回合结束时的状态" }
+                    { rank: "I", condition: "II：本场到达夜场时，立刻升阶", skillName: "月升", skillDesc: "【月升】<br>该角色胡牌成功或听牌流局时，下一场进入夜场。" },
+                    { rank: "II", condition: "III：本场到达夜场时，立刻升阶", skillName: "月华", skillDesc: "【月华】<br>本场开始时，所有角色只能副露1次" },
+                    { rank: "III", condition: "III：已达到最高阶", skillName: "月神苏醒", skillDesc: "【月神苏醒】<br>该角色本场任意成功胡牌/听牌流局时，均同样视为自摸海底捞月。" }
                 ]
             }
         ];
@@ -720,6 +769,7 @@
             // 重置UI和状态
             document.querySelectorAll('.stone-btn, .status-btn').forEach(btn => {
                 if(!btn.classList.contains('btn-upgrade')) btn.classList.remove('active');
+                btn.classList.remove('locked', 'locked-chains', 'locked-silence'); // 重置锁定状态
             });
             // 清除所有特效
             document.querySelectorAll('.visual-effects-layer > div').forEach(div => div.classList.remove('active'));
@@ -815,14 +865,51 @@
         function showCondition() {
             // 核心修改逻辑
             // 1. 如果是第三阶段（Rank III, index 2），直接返回，不显示弹窗
-            if (currentStage >= 2) return;
-
-            const char = characters[currentCharIndex];
-            // 2. 显示 *下一阶* 的条件
-            const nextStage = char.stages[currentStage + 1];
+            if (currentStage >= 2 && currentStage !== 2) return;
 
             const toast = document.getElementById('conditionToast');
-            toast.innerText = nextStage.condition;
+
+            // === 修改处：一阶段、二阶段、三阶段固定弹窗文字，与技能列表数据独立 ===
+            if (currentStage === 0) {
+                // 一阶段 (I) -> 
+                const rank1Texts = [
+                    "升阶条件：<br>该角色胡牌成功", // 0: 阿莱雅
+                    "升阶条件（达成其中一个条件）：<br>①该角色立直成功<br>②到达夜场时", // 1: 梦魇
+                    "升阶条件（达成其中一个条件）：<br>①该角色成功造成任意伤害<br>②推理成功3次", // 2: 寻
+                    "升阶条件：<br>该角色本场没有受到任何伤害", // 3: 谧娘
+                    "升阶条件（达成其中一个条件）：<br>①本场流局<br>②到达夜场时，立刻升阶", // 4: 神子
+                    "升阶条件：<br>全场有角色成功胡牌", // 5: 浪人
+                    "升阶条件（达成其中一个条件）：<br>①该角色胡牌成功<br>②除外区牌到达3张", // 6: 乾坤袋
+                    "升阶条件（达成其中一个条件）：<br>①该角色胡牌成功<br>②到达深夜场时，立刻", // 7: 泽克
+                    "升阶条件（达成其中一个条件）：<br>①该角色胡牌成功<br>②该角色立直成功", // 8: 铜钱剑
+                    "升阶条件：<br>本场到达夜场时，立刻升阶"  // 9: 恩娜
+                ];
+                // 确保索引安全，虽然逻辑上不会越界
+                toast.innerHTML = rank1Texts[currentCharIndex] || "未知指令";
+
+            } else if (currentStage === 1) {
+               // 二阶段 (II) -> 
+                const rank2Texts = [
+                    "升阶条件（达成其中一条）：<br>①该角色胡牌成功<br>②发动技能抽牌到达3张", // 0: 阿莱雅
+                    "升阶条件（达成其中一条）：<br>①该角色胡牌成功<br>②达到夜场时", // 1: 梦魇
+                    "升阶条件（达成其中一条）：<br>①该角色成功造成任意伤害<br>②推理成功3次", // 2: 寻
+                    "升阶条件：<br>该角色本场没有受到任何伤害", // 3: 谧娘
+                    "升阶条件：<br>该角色胡牌成功", // 4: 神子
+                    "升阶条件：<br>该角色胡牌成功", // 5: 浪人
+                    "升阶条件（达成其中一条）：<br>①该角色胡牌成功<br>②除外区牌到达4张", // 6: 乾坤袋
+                    "升阶条件：<br>该角色本场内造成不小于 4000额外伤害 时", // 7: 泽克
+                    "升阶条件（达成其中一条）：<br>①该角色胡牌成功<br>②该角色立直成功", // 8: 铜钱剑
+                    "升阶条件：<br>本场到达夜场时，立刻升阶"  // 9: 恩娜
+                ];
+                toast.innerHTML = rank2Texts[currentCharIndex] || "未知指令";
+            } else if (currentStage === 2) {
+                // 三阶段 (III)
+                toast.innerHTML = "III：已达到最高阶";
+            } else {
+                const char = characters[currentCharIndex];
+                const nextStage = char.stages[currentStage + 1];
+                toast.innerText = nextStage ? nextStage.condition : "";
+            }
 
             toast.classList.add('show');
             if(toast.timeout) clearTimeout(toast.timeout);
@@ -835,6 +922,9 @@
         function toggleBtn(el) {
             const actionType = el.getAttribute('data-action');
             const dataType = el.getAttribute('data-type'); // 获取状态类型
+
+            // 检查按钮是否被锁定
+            if (el.classList.contains('locked')) return;
 
             // 1. 天赋/技能互斥
             if (actionType === 'talent' || actionType === 'skill') {
@@ -861,11 +951,42 @@
             // 4. 处理状态特效
             if (dataType) {
                 // 如果是那4个有特效的状态
-                if (['confinement', 'mark', 'silence', 'sleep'].includes(dataType)) {
+                // 新增：将 set 加入到判断中
+                if (['confinement', 'mark', 'silence', 'sleep', 'set'].includes(dataType)) {
                     const effectLayer = document.getElementById('effect-' + dataType);
                     if (effectLayer) {
                         if (isActive) effectLayer.classList.add('active');
                         else effectLayer.classList.remove('active');
+                    }
+                }
+
+                // 禁锢逻辑：锁定天赋
+                if (dataType === 'confinement') {
+                    const talentBtn = document.querySelector('.stone-btn[data-action="talent"]');
+                    if (isActive) {
+                        talentBtn.classList.add('locked', 'locked-chains');
+                        // 如果天赋原本是激活的，强制关闭
+                        if (talentBtn.classList.contains('active')) {
+                            talentBtn.classList.remove('active');
+                            resetBlurEffect();
+                        }
+                    } else {
+                        talentBtn.classList.remove('locked', 'locked-chains');
+                    }
+                }
+
+                // 沉默逻辑：锁定技能
+                if (dataType === 'silence') {
+                    const skillBtn = document.querySelector('.stone-btn[data-action="skill"]');
+                    if (isActive) {
+                        skillBtn.classList.add('locked', 'locked-silence');
+                        // 如果技能原本是激活的，强制关闭
+                        if (skillBtn.classList.contains('active')) {
+                            skillBtn.classList.remove('active');
+                            resetBlurEffect();
+                        }
+                    } else {
+                        skillBtn.classList.remove('locked', 'locked-silence');
                     }
                 }
             }
@@ -903,7 +1024,8 @@
                     // 技能面板逻辑：只有 Rank I 和 Rank II 显示升阶条件，Rank III 不显示
                     let conditionHtml = '';
                     if (i < 2) {
-                        conditionHtml = `<div class="skill-condition">条件: ${s.condition}</div>`;
+                        // === 修改处：将 "条件:" 改为 "升阶条件:" ===
+                        conditionHtml = `<div class="skill-condition">升阶条件: ${s.condition}</div>`;
                     }
 
                     skillHtml += `
