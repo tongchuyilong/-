@@ -533,20 +533,24 @@
             </div>
 
             <div class="footer-row">
-                <div class="stone-btn big-btn btn-upgrade can-upgrade" onclick="upgradeStage()">EVOLVE</div>
-                <div class="stone-btn big-btn btn-exhaust" onclick="toggleBtn(this)">TIRED</div>
+                <div class="stone-btn big-btn btn-upgrade can-upgrade" onclick="upgradeStage()">升阶</div>
+                <div class="stone-btn big-btn btn-exhaust" onclick="toggleBtn(this)">力竭</div>
             </div>
         </div>
 
-        <!-- 扣血弹窗 -->
+        <!-- 扣血弹窗 (修改后) -->
         <div class="modal-overlay" id="hpModal">
             <div class="gothic-modal">
-                <h3 style="color:var(--gold); margin-bottom: 5px; font-family:'Cinzel';">MODIFY HP</h3>
+                <h3 style="color:var(--gold); margin-bottom: 5px; font-family:'Cinzel';">血量修改</h3>
                 <div style="width: 100%; height: 1px; background: #333; margin: 10px 0;"></div>
-                <input type="number" id="hpInput" class="hp-input" placeholder="0" pattern="[0-9-]*">
-                <div style="display:flex; justify-content:space-between; gap:10px;">
-                    <button class="stone-btn" style="flex:1; padding:10px;" onclick="closeHpModal()">CANCEL</button>
-                    <button class="stone-btn" style="flex:1; padding:10px; color:var(--red); border-color:var(--red);" onclick="applyHpChange()">CONFIRM</button>
+                <input type="number" id="hpInput" class="hp-input" placeholder="0" pattern="[0-9]*">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <!-- 减号按钮：扣血 -->
+                    <button class="stone-btn" style="color:var(--red); border-color:var(--red); font-size:24px; font-weight:bold;" onclick="applyHpChange(-1)">－</button>
+                    <!-- 取消按钮 -->
+                    <button class="stone-btn" style="font-size:14px;" onclick="closeHpModal()">取消</button>
+                    <!-- 加号按钮：加血 -->
+                    <button class="stone-btn" style="color:var(--gold); border-color:var(--gold); font-size:24px; font-weight:bold;" onclick="applyHpChange(1)">＋</button>
                 </div>
             </div>
         </div>
@@ -814,12 +818,17 @@
             document.getElementById('hpModal').classList.remove('open');
             document.getElementById('hpInput').blur();
         }
-        function applyHpChange() {
+        
+        // 修改后的血量计算函数：接收方向参数（1为加，-1为减）
+        function applyHpChange(direction) {
             const inputVal = document.getElementById('hpInput').value;
-            if(inputVal === "") { closeHpModal(); return; }
+            if(inputVal === "") { return; } // 如果为空不操作
             const val = parseInt(inputVal);
-            if (!isNaN(val)) {
-                currentHp -= val;
+            if (!isNaN(val) && val !== 0) {
+                // 计算：当前血量 + (输入值 * 方向)
+                // 例如：输入1000，点击减号(-1) => currentHp + (-1000)
+                currentHp += (val * direction);
+                
                 if(currentHp < 0) currentHp = 0;
                 updateHpDisplay(currentHp);
             }
@@ -1057,9 +1066,7 @@
             overlay.classList.remove('show');
         }
 
-        document.getElementById('hpInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') applyHpChange();
-        });
+        // 移除了 Enter 键的绑定，防止意外操作
     </script>
 </body>
 </html>
