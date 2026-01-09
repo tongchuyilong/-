@@ -511,7 +511,14 @@
                 id: 1,
                 name: "阿莱雅",
                 title: "红莲魔女",
-                img: "https://liblib-api.vibrou.com/image/918731551f334645855014389146c825.png", 
+                // 默认图片（Rank I）
+                img: "https://image2url.com/r2/bucket3/images/1767785772673-027981a3-3d59-407a-9e25-c713e75617b6.png", 
+                // 新增：各阶段对应图片
+                stageImages: [
+                    "https://image2url.com/r2/bucket3/images/1767785772673-027981a3-3d59-407a-9e25-c713e75617b6.png", // I
+                    "https://image2url.com/r2/bucket1/images/1767785808177-6278f315-746a-49f6-a6c6-cf632a1d3bba.png", // II
+                    "https://image2url.com/r2/bucket2/images/1767785818017-c1609005-8ae9-4aff-9758-aa94681f3e2e.png"  // III
+                ],
                 talentDesc: "【红莲之怒】<br>本回合造成的战斗伤害 +1000",
                 stages: [
                     { rank: "I", condition: "I：回合结束时 PP=0", skillName: "火球术", skillDesc: "【火球术】<br>对一名敌方随从造成 2000 点伤害" },
@@ -523,7 +530,12 @@
                 id: 2,
                 name: "梦魇",
                 title: "深渊守望",
-                img: "https://placehold.co/400x800/1a2a3a/FFF?text=Nightmare",
+                img: "https://image2url.com/r2/bucket2/images/1767781848672-618c7a11-fca4-468e-bdaf-9d98603c9629.jpg",
+                stageImages: [
+                    "https://image2url.com/r2/bucket2/images/1767781848672-618c7a11-fca4-468e-bdaf-9d98603c9629.jpg",
+                    "https://image2url.com/r2/bucket1/images/1767781940190-8149b1ed-55c8-4f6c-a36d-348dde8325cf.jpg",
+                    "https://image2url.com/r2/bucket1/images/1767781993798-da1c1777-2b6a-4e0c-b61a-0a14bd7e171e.jpg"
+                ],
                 talentDesc: "【潮汐】<br>回合结束时回复 2000 HP",
                 stages: [
                     { rank: "I", condition: "I：手牌数 >= 7", skillName: "深渊凝视", skillDesc: "【深渊凝视】<br>抽取 2 张牌" },
@@ -535,7 +547,12 @@
                 id: 3,
                 name: "寻",
                 title: "森之妖精",
-                img: "https://placehold.co/400x800/1a3a1a/FFF?text=Xun",
+                img: "https://image2url.com/r2/bucket2/images/1767783814445-57469afa-0645-42bd-aca3-195b080ea68b.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket2/images/1767783814445-57469afa-0645-42bd-aca3-195b080ea68b.png",
+                    "https://image2url.com/r2/bucket1/images/1767783913129-832b10d2-09be-4594-a1d1-8336840a32c7.png",
+                    "https://image2url.com/r2/bucket3/images/1767784574129-865d148f-f1de-4bbb-b529-d0b0c8c27ec3.png"
+                ],
                 talentDesc: "【连击】<br>本回合使用卡牌数 >= 2 时，攻击力+1000",
                 stages: [
                     { rank: "I", condition: "I：使用3张妖精", skillName: "妖精之环", skillDesc: "【妖精之环】<br>将两张妖精加入手牌" },
@@ -547,7 +564,12 @@
                 id: 4,
                 name: "谧娘",
                 title: "不朽圣剑",
-                img: "https://placehold.co/400x800/3a3a2a/FFF?text=MiNiang",
+                img: "https://image2url.com/r2/bucket2/images/1767784589241-4f09120f-55a1-4060-8901-5fc7775a3490.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket2/images/1767784589241-4f09120f-55a1-4060-8901-5fc7775a3490.png",
+                    "https://image2url.com/r2/bucket3/images/1767784648847-770b167f-4968-4570-b50a-7b6dae177bec.png",
+                    "https://image2url.com/r2/bucket2/images/1767784673459-8a623c65-6078-4e90-b79c-cdd08b45f14e.png"
+                ],
                 talentDesc: "【圣盾】<br>受到的伤害 -500（最低为0）",
                 stages: [
                     { rank: "I", condition: "I：场上有指挥官", skillName: "援护射击", skillDesc: "【援护射击】<br>随机对一个敌方随从造成 1000 点伤害" },
@@ -559,7 +581,12 @@
                 id: 5,
                 name: "神子",
                 title: "死灵法师",
-                img: "https://placehold.co/400x800/2a1a3a/FFF?text=Miko",
+                img: "https://image2url.com/r2/bucket3/images/1767784709647-84bd40d9-a1f5-4672-93ea-06bdf924b378.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket3/images/1767784709647-84bd40d9-a1f5-4672-93ea-06bdf924b378.png",
+                    "https://image2url.com/r2/bucket2/images/1767784733391-c96dd8b8-7f80-4909-a32f-d93ff3a6728c.png",
+                    "https://image2url.com/r2/bucket2/images/1767784751226-283950f0-e24a-40b9-b21f-2b95e6da84a7.png"
+                ],
                 talentDesc: "【通灵】<br>墓地数每回合 +1",
                 stages: [
                     { rank: "I", condition: "I：随从被破坏", skillName: "灵魂转移", skillDesc: "【灵魂转移】<br>破坏一个己方随从，抽两张牌" },
@@ -571,7 +598,12 @@
                 id: 6,
                 name: "浪人",
                 title: "暗夜伯爵",
-                img: "https://placehold.co/400x800/3a0a0a/FFF?text=Ronin",
+                img: "https://image2url.com/r2/bucket1/images/1767785035107-3f55095e-d57b-4c46-b6c9-e47d3d354c58.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket1/images/1767785035107-3f55095e-d57b-4c46-b6c9-e47d3d354c58.png",
+                    "https://image2url.com/r2/bucket2/images/1767785056186-120ed7a7-29d6-4844-8432-4d4c9b494b74.png",
+                    "https://image2url.com/r2/bucket3/images/1767785076674-0fab848b-03a9-4033-84ad-7bc4c519cda3.png"
+                ],
                 talentDesc: "【复仇】<br>HP低于10000时，所有手牌费用-1",
                 stages: [
                     { rank: "I", condition: "I：自伤次数 >= 2", skillName: "利爪的一击", skillDesc: "【利爪的一击】<br>对双方主战者各造成 1000 点伤害" },
@@ -583,7 +615,12 @@
                 id: 7,
                 name: "乾坤袋",
                 title: "光辉祭司",
-                img: "https://placehold.co/400x800/3a3a3a/FFF?text=Bag",
+                img: "https://image2url.com/r2/bucket1/images/1767785164686-a1cf5183-ad99-473b-9c7b-4d79e241031b.jpg",
+                stageImages: [
+                    "https://image2url.com/r2/bucket1/images/1767785164686-a1cf5183-ad99-473b-9c7b-4d79e241031b.jpg",
+                    "https://image2url.com/r2/bucket1/images/1767785186465-b6cd499a-f757-4048-a461-c058cb7231e3.jpg",
+                    "https://image2url.com/r2/bucket2/images/1767785201133-3108bbb0-aa85-4174-b9b2-7a64e89f14c3.jpg"
+                ],
                 talentDesc: "【祈祷】<br>倒数护符倒数 -1",
                 stages: [
                     { rank: "I", condition: "I：护符发动", skillName: "漆黑法典", skillDesc: "【漆黑法典】<br>消灭一个生命值 3 以下的敌方随从" },
@@ -595,7 +632,12 @@
                 id: 8,
                 name: "泽克",
                 title: "黑龙骑士",
-                img: "https://placehold.co/400x800/0a1a0a/FFF?text=Zeke",
+                img: "https://image2url.com/r2/bucket2/images/1767785261482-aa80a43f-0363-4b04-b069-9eba1e7ffec5.jpg",
+                stageImages: [
+                    "https://image2url.com/r2/bucket2/images/1767785261482-aa80a43f-0363-4b04-b069-9eba1e7ffec5.jpg",
+                    "https://image2url.com/r2/bucket2/images/1767785285842-9b60a54b-cb63-4f2b-87f3-f51650e674fb.jpg",
+                    "https://image2url.com/r2/bucket2/images/1767785300106-e3226d59-63d1-414d-a419-792a181d2577.jpg"
+                ],
                 talentDesc: "【觉醒】<br>PP最大值 >= 7 时，攻击力翻倍",
                 stages: [
                     { rank: "I", condition: "I：PP最大值增加", skillName: "龙之启示", skillDesc: "【龙之启示】<br>PP最大值 +1" },
@@ -607,7 +649,12 @@
                 id: 9,
                 name: "铜钱剑",
                 title: "超越者",
-                img: "https://placehold.co/400x800/1a1a2a/FFF?text=CoinSword",
+                img: "https://image2url.com/r2/bucket3/images/1767785395865-18d3603d-4d20-4f97-bf92-e1838dff4bf5.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket3/images/1767785395865-18d3603d-4d20-4f97-bf92-e1838dff4bf5.png",
+                    "https://image2url.com/r2/bucket1/images/1767785409244-c2b8f9c7-436d-4e5d-9d21-5886b6f91fb7.png",
+                    "https://image2url.com/r2/bucket1/images/1767785422790-c24a4d53-66ed-4709-97d4-66c8b71dbdb7.png"
+                ],
                 talentDesc: "【共鸣】<br>牌库剩余张数为偶数时，获得疾驰",
                 stages: [
                     { rank: "I", condition: "I：将造物洗入牌库", skillName: "机械降神", skillDesc: "【机械降神】<br>舍弃手牌，抽取 6 张牌" },
@@ -619,7 +666,12 @@
                 id: 10,
                 name: "恩娜",
                 title: "时空神",
-                img: "https://placehold.co/400x800/000/FFF?text=Enna",
+                img: "https://image2url.com/r2/bucket1/images/1767785439035-79da36df-5b50-4621-ab10-4e303d1ed334.png",
+                stageImages: [
+                    "https://image2url.com/r2/bucket1/images/1767785439035-79da36df-5b50-4621-ab10-4e303d1ed334.png",
+                    "https://image2url.com/r2/bucket3/images/1767785448504-ab7b1427-26d5-4a19-b4fb-4f737371ade2.png",
+                    "https://image2url.com/r2/bucket1/images/1767785459445-00412e74-06db-4a13-8b4d-9a4fd41388e5.png"
+                ],
                 talentDesc: "【重置】<br>将双方费用重置为 0",
                 stages: [
                     { rank: "I", condition: "I：第 5 回合", skillName: "命运之轮", skillDesc: "【命运之轮】<br>双方抽取 1 张牌" },
@@ -663,7 +715,7 @@
             updateHpDisplay(currentHp);
             const char = characters[index];
             document.getElementById('charNameDisplay').innerText = char.name;
-            document.getElementById('charImg').src = char.img;
+            document.getElementById('charImg').src = char.img; // 重置为默认（Rank I）图片
             
             // 重置UI和状态
             document.querySelectorAll('.stone-btn, .status-btn').forEach(btn => {
@@ -753,7 +805,11 @@
             const char = characters[currentCharIndex];
             const stageData = char.stages[currentStage];
             document.getElementById('stageBadge').innerText = stageData.rank;
-            // Removed direct text assignment here to rely on showCondition dynamically logic
+            
+            // 切换图片逻辑
+            if (char.stageImages && char.stageImages[currentStage]) {
+                document.getElementById('charImg').src = char.stageImages[currentStage];
+            }
         }
 
         function showCondition() {
